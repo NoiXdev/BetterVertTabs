@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "BetterVertTabs",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Vertical tabs with pinned tiles, tab groups and drag & drop – an Arc/Zen-style sidebar for Firefox.",
   "browser_specific_settings": {
     "gecko": {
