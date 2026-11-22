@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "BetterVertTabs",
+  "version": "0.2.0",
+  "description": "Vertikale Tabs mit angehefteten Kacheln – Arc/Zen-Stil für Firefox.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "betterverttabs@noixdev",
+      "strict_min_version": "139.0",
+      "data_collection_permissions": {
+        "required": [
+          "none"
+        ]
+      }
+    }
+  },
+  "permissions": [
+    "tabs",
+    "tabGroups",
+    "storage",
+    "sessions"
+  ],
+  "sidebar_action": {
+    "default_title": "BetterVertTabs",
+    "default_panel": "sidebar/sidebar.html",
+    "default_icon": "icons/icon.svg",
+    "open_at_install": true
+  },
+  "icons": {
+    "48": "icons/icon.svg",
+    "96": "icons/icon.svg"
+  },
+  "commands": {
+    "_execute_sidebar_action": {
+      "suggested_key": {
+        "default": "Alt+S"
+      },
+      "description": "Sidebar ein-/ausblenden"
+    }
+  }
+}
