@@ -1,11 +1,11 @@
 "use strict";
 
 /*
- * BetterVertTabs – vertikale Sidebar mit angehefteten Kacheln.
+ * BetterVertTabs – vertical tab sidebar with pinned tiles.
  *
- * Prinzip: Bei jedem Tab-/Gruppen-Event wird der Zustand des Fensters neu
- * abgefragt und die Sidebar komplett neu gerendert (gedrosselt auf einen
- * Frame). Das ist simpel, robust und für ein paar hundert Tabs schnell genug.
+ * Approach: on every tab/group event the window state is queried again and
+ * the whole sidebar is re-rendered (throttled to one frame). Simple, robust
+ * and fast enough for a few hundred tabs.
  */
 
 const api = globalThis.browser;
@@ -29,13 +29,13 @@ let dragTabId = null;
 let renameGroupId = null;
 let lastClick = { id: null, at: 0 };
 let groupClickTimer = null;
-let linkDragDepth = 0; // > 0 während ein Link/Lesezeichen von außen gezogen wird
+let linkDragDepth = 0; // > 0 while a link/bookmark is dragged in from outside
 
 /*
- * Kachel-Zustand pro Tab. Wird über die sessions-API direkt am Tab
- * gespeichert und übersteht damit auch Firefox-Neustarts.
- *   tileUrl    – die Seite, die beim Anheften offen war
- *   tileClosed – Kachel wurde „geschlossen“ (entladen, wartet auf Reset)
+ * Tile state per tab. Stored on the tab itself via the sessions API, so it
+ * survives Firefox restarts.
+ *   tileUrl    – the page that was open when the tab was pinned
+ *   tileClosed – the tile was "closed" (unloaded, waiting for a reset)
  */
 const tileInfo = new Map(); // tabId -> {url, closed}
 const store = {
@@ -62,9 +62,9 @@ async function loadTileInfo() {
   const pinned = tabs.filter((t) => t.pinned);
   await Promise.all(pinned.map(async (t) => {
     let [url, closed] = await Promise.all([store.get(t.id, "tileUrl"), store.get(t.id, "tileClosed")]);
-    // Kachel ohne gespeicherte Seite (z. B. von Firefox selbst angeheftet): aktuelle Seite merken
+    // Tile without a stored page (e.g. pinned by Firefox itself): remember the current page
     if (!url && isRealUrl(t.url)) { url = t.url; store.set(t.id, "tileUrl", url); }
-    // Geschlossene Kachel wurde (per Klick, Tastatur, …) wieder aktiviert -> auf Originalseite zurücksetzen
+    // A closed tile was activated again (click, keyboard, …) -> reset it to its original page
     if (closed && t.active) {
       closed = false;
       store.del(t.id, "tileClosed");
@@ -99,14 +99,14 @@ function render() {
   const pinned = tabs.filter((t) => t.pinned);
   const loose = tabs.filter((t) => !t.pinned);
 
-  // Kacheln
+  // Tiles
   const dropSlot = document.createElement("div");
   dropSlot.className = "tile-drop";
-  dropSlot.textContent = pinned.length ? "+" : "Hierher ziehen zum Anheften";
+  dropSlot.textContent = pinned.length ? "+" : "Drop here to pin";
   $pinned.replaceChildren(...pinned.map(renderTile), dropSlot);
   $pinned.classList.toggle("empty", pinned.length === 0);
 
-  // Gruppen in Tab-Reihenfolge
+  // Groups in tab order
   const order = [];
   const members = new Map();
   for (const t of loose) {
@@ -116,7 +116,7 @@ function render() {
   }
   $groups.replaceChildren(...order.map((gid) => renderGroup(gid, members.get(gid))));
 
-  // Lose Tabs
+  // Ungrouped tabs
   $tabs.replaceChildren(...loose.filter((t) => !inGroup(t)).map(renderRow));
 
   if (renameGroupId !== null) startRename(renameGroupId);
@@ -130,11 +130,11 @@ function renderTile(tab) {
   el.classList.toggle("active", tab.active);
   el.classList.toggle("closed", !!info.closed);
   el.classList.toggle("discarded", !!tab.discarded);
-  // Seite weicht von der angehefteten ab -> kleiner Punkt als Hinweis
+  // Page differs from the pinned one -> show a small dot
   el.classList.toggle("navigated", !info.closed && !!info.url && sameUrl(info.url, tab.url) === false);
   el.title = info.closed
-    ? `${tab.title || tab.url}\n(geschlossen – Klick öffnet die Originalseite)`
-    : `${tab.title || tab.url}\nDoppelklick: zurück zur Originalseite`;
+    ? `${tab.title || tab.url}\n(closed – click to open the original page)`
+    : `${tab.title || tab.url}\nDouble-click: back to the original page`;
   el.dataset.tabId = tab.id;
   el.draggable = true;
   el.append(favicon(tab, "tile-icon"));
@@ -144,7 +144,7 @@ function renderTile(tab) {
     const close = document.createElement("button");
     close.type = "button";
     close.className = "tile-close";
-    close.title = "Kachel schließen";
+    close.title = "Close tile";
     close.append(svg('<svg viewBox="0 0 16 16"><path d="M5 5l6 6m0-6l-6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>'));
     close.addEventListener("click", (e) => { e.stopPropagation(); closeTile(tab.id); });
     el.append(close);
@@ -176,7 +176,7 @@ function renderRow(tab) {
   const close = document.createElement("button");
   close.type = "button";
   close.className = "row-close";
-  close.title = "Tab schließen";
+  close.title = "Close tab";
   close.append(svg('<svg viewBox="0 0 16 16"><path d="M4.5 4.5l7 7m0-7l-7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>'));
   close.addEventListener("click", (e) => { e.stopPropagation(); api.tabs.remove(tab.id); });
 
@@ -203,13 +203,13 @@ function renderGroup(gid, members) {
   head.append(svg('<svg class="chevron" viewBox="0 0 16 16"><path d="M6 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'), dot);
   const title = document.createElement("span");
   title.className = "group-title";
-  title.textContent = g.title || "Unbenannte Gruppe";
+  title.textContent = g.title || "Unnamed group";
   const count = document.createElement("span");
   count.className = "group-count";
   count.textContent = members.length;
   head.append(title, count);
 
-  // Einfacher Klick klappt (kurz verzögert), Doppelklick benennt um
+  // Single click toggles collapse (slightly delayed), double-click renames
   head.addEventListener("click", () => {
     if (groupClickTimer) { clearTimeout(groupClickTimer); groupClickTimer = null; startRename(gid); return; }
     groupClickTimer = setTimeout(() => {
@@ -222,7 +222,7 @@ function renderGroup(gid, members) {
 
   const list = document.createElement("div");
   list.className = "group-tabs";
-  // Eingeklappt: nur den aktiven Tab zeigen (wie Arc/Zen)
+  // Collapsed: only show the active tab (like Arc/Zen)
   const visible = g.collapsed ? members.filter((t) => t.active) : members;
   list.append(...visible.map(renderRow));
 
@@ -262,7 +262,7 @@ function audioBadge(tab) {
   b.type = "button";
   b.className = "audio";
   const muted = !!tab.mutedInfo?.muted;
-  b.title = muted ? "Ton an" : "Stummschalten";
+  b.title = muted ? "Unmute" : "Mute";
   b.append(svg(muted
     ? '<svg viewBox="0 0 16 16"><path d="M2.5 6h2l3-2.5v9L4.5 10h-2z" fill="currentColor"/><path d="M10.5 6l4 4m0-4l-4 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>'
     : '<svg viewBox="0 0 16 16"><path d="M2.5 6h2l3-2.5v9L4.5 10h-2z" fill="currentColor"/><path d="M10 5.5a3.5 3.5 0 0 1 0 5M11.8 3.8a6 6 0 0 1 0 8.4" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>'));
@@ -270,12 +270,12 @@ function audioBadge(tab) {
   return b;
 }
 
-/* --------------------------------------------------------- interaktion */
+/* --------------------------------------------------------- interaction */
 
 function bindTabEvents(el, tab) {
   el.addEventListener("click", () => {
-    // Doppelklick selbst erkennen: nach dem ersten Klick wird neu gerendert,
-    // dadurch käme ein natives dblclick-Event nicht zuverlässig an.
+    // Detect double-clicks manually: the first click triggers a re-render,
+    // so a native dblclick event would not arrive reliably.
     const now = Date.now();
     const isDouble = tab.pinned && lastClick.id === tab.id && now - lastClick.at < 400;
     lastClick = { id: tab.id, at: isDouble ? 0 : now };
@@ -307,7 +307,7 @@ function bindTabEvents(el, tab) {
   bindDropTarget(el, { tabId: tab.id, acceptLinks: tab.pinned });
 }
 
-/* --------------------------------------------------------------- kacheln */
+/* ----------------------------------------------------------------- tiles */
 
 async function setPinned(id, pinned) {
   const tab = tabById(id) || (await api.tabs.get(id));
@@ -320,8 +320,8 @@ async function setPinned(id, pinned) {
   }
 }
 
-// „Schließen“ wie bei Arc: Kachel bleibt, Tab wird entladen und beim
-// nächsten Öffnen auf die Originalseite zurückgesetzt.
+// "Close" like Arc: the tile stays, its tab is unloaded and reset to the
+// original page the next time it is opened.
 async function closeTile(id) {
   const tab = tabById(id);
   if (!tab) return;
@@ -355,7 +355,7 @@ async function createTile(url, index) {
     await store.set(tab.id, "tileUrl", url);
     if (index !== undefined) await api.tabs.move(tab.id, { index });
   } catch (err) {
-    console.error("Kachel konnte nicht erstellt werden:", url, err);
+    console.error("Could not create tile:", url, err);
   }
 }
 
@@ -402,7 +402,7 @@ function bindDropTarget(el, target) {
     clearDropMarkers();
     endLinkDrag();
     if (dragTabId === null) {
-      // Link von außen auf eine Kachel -> neue Kachel daneben
+      // Link from outside dropped on a tile -> new tile next to it
       const url = droppedUrl(e.dataTransfer);
       const ref = tabById(target.tabId);
       if (url && ref) createTile(url, ref.index + (pos === "after" ? 1 : 0));
@@ -412,8 +412,8 @@ function bindDropTarget(el, target) {
   });
 }
 
-// Leere Flächen: Kachel-Grid und lose Liste nehmen Drops „ans Ende“ an.
-// Links/Lesezeichen von außen werden im Grid zur Kachel, in der Liste zum Tab.
+// Empty areas: the tile grid and the tab list accept drops "at the end".
+// Links/bookmarks from outside become a tile in the grid and a tab in the list.
 for (const [zone, kind] of [[$pinned, "pinned"], [$tabs, "loose"], [document.getElementById("new-tab"), "loose"]]) {
   zone.addEventListener("dragover", (e) => {
     if (dragTabId === null && !isLinkDrag(e)) return;
@@ -438,7 +438,7 @@ for (const [zone, kind] of [[$pinned, "pinned"], [$tabs, "loose"], [document.get
   });
 }
 
-// Drop-Platz im Grid nur einblenden, solange ein Link von außen gezogen wird
+// Only show the grid drop slot while a link is dragged in from outside
 function endLinkDrag() { linkDragDepth = 0; document.body.classList.remove("drag-active"); }
 document.addEventListener("dragenter", (e) => {
   if (!isLinkDrag(e)) return;
@@ -455,14 +455,14 @@ async function dropTab(id, target, pos) {
   const dragged = tabById(id);
   if (!dragged) return;
 
-  // Auf Gruppenkopf -> in die Gruppe
+  // Onto a group header -> into that group
   if (target.groupId !== undefined) {
     if (dragged.pinned) await setPinned(id, false);
     await api.tabs.group({ groupId: target.groupId, tabIds: [id] });
     return;
   }
 
-  // Auf leere Zone
+  // Onto an empty area
   if (target.zone === "pinned") {
     if (!dragged.pinned) await setPinned(id, true);
     const pinnedCount = tabs.filter((t) => t.pinned).length;
@@ -476,7 +476,7 @@ async function dropTab(id, target, pos) {
     return;
   }
 
-  // Auf einen anderen Tab
+  // Onto another tab
   if (target.tabId === id) return;
   let ref = tabById(target.tabId);
   if (!ref) return;
@@ -491,14 +491,14 @@ async function dropTab(id, target, pos) {
     }
   }
 
-  // Indizes haben sich evtl. verschoben -> frisch holen
+  // Indexes may have shifted -> fetch them again
   const [cur, refNow] = await Promise.all([api.tabs.get(id), api.tabs.get(ref.id)]);
   let index = pos === "after" ? refNow.index + 1 : refNow.index;
   if (cur.index < index) index -= 1;
   if (index !== cur.index) await api.tabs.move(id, { index });
 }
 
-/* --------------------------------------------------------- kontextmenü */
+/* ---------------------------------------------------------- context menu */
 
 function openMenu(e, items) {
   $menu.replaceChildren();
@@ -549,27 +549,27 @@ function openTabMenu(e, tab) {
   if (tab.pinned) return openTileMenu(e, tab);
   const muted = !!tab.mutedInfo?.muted;
   const items = [
-    { label: "Als Kachel anheften", run: () => setPinned(tab.id, true) },
-    { label: "Neu laden", run: () => api.tabs.reload(tab.id) },
-    { label: "Duplizieren", run: () => api.tabs.duplicate(tab.id) },
-    { label: muted ? "Ton an" : "Stummschalten", run: () => api.tabs.update(tab.id, { muted: !muted }) },
+    { label: "Pin as tile", run: () => setPinned(tab.id, true) },
+    { label: "Reload", run: () => api.tabs.reload(tab.id) },
+    { label: "Duplicate", run: () => api.tabs.duplicate(tab.id) },
+    { label: muted ? "Unmute" : "Mute", run: () => api.tabs.update(tab.id, { muted: !muted }) },
   ];
-  if (!tab.active && !tab.discarded) items.push({ label: "Entladen (Speicher sparen)", run: () => api.tabs.discard(tab.id) });
+  if (!tab.active && !tab.discarded) items.push({ label: "Unload (save memory)", run: () => api.tabs.discard(tab.id) });
 
   if (hasGroups) {
     items.push("-");
     for (const g of groups.values()) {
       if (g.id === tab.groupId) continue;
-      items.push({ label: `In „${g.title || "Unbenannte Gruppe"}“ verschieben`, run: () => api.tabs.group({ groupId: g.id, tabIds: [tab.id] }) });
+      items.push({ label: `Move to "${g.title || "Unnamed group"}"`, run: () => api.tabs.group({ groupId: g.id, tabIds: [tab.id] }) });
     }
-    items.push({ label: "Neue Gruppe mit diesem Tab", run: () => newGroup([tab.id]) });
-    if (inGroup(tab)) items.push({ label: "Aus Gruppe entfernen", run: () => api.tabs.ungroup([tab.id]) });
+    items.push({ label: "New group with this tab", run: () => newGroup([tab.id]) });
+    if (inGroup(tab)) items.push({ label: "Remove from group", run: () => api.tabs.ungroup([tab.id]) });
   }
 
   items.push("-");
   const below = tabs.filter((t) => t.index > tab.index && !t.pinned).map((t) => t.id);
-  if (below.length) items.push({ label: `Tabs darunter schließen (${below.length})`, run: () => api.tabs.remove(below) });
-  items.push({ label: "Schließen", danger: true, run: () => api.tabs.remove(tab.id) });
+  if (below.length) items.push({ label: `Close tabs below (${below.length})`, run: () => api.tabs.remove(below) });
+  items.push({ label: "Close", danger: true, run: () => api.tabs.remove(tab.id) });
   openMenu(e, items);
 }
 
@@ -579,45 +579,45 @@ function openTileMenu(e, tab) {
   let host = "";
   try { host = new URL(info.url).hostname.replace(/^www\./, ""); } catch {}
   const items = [];
-  if (info.url) items.push({ label: `Zur Originalseite (${host || "Start"})`, run: () => resetTile(tab.id) });
+  if (info.url) items.push({ label: `Back to original page (${host || "start"})`, run: () => resetTile(tab.id) });
   if (!info.closed && isRealUrl(tab.url) && !sameUrl(info.url, tab.url)) {
-    items.push({ label: "Aktuelle Seite als Originalseite merken", run: () => setTileUrlToCurrent(tab.id) });
+    items.push({ label: "Use current page as original page", run: () => setTileUrlToCurrent(tab.id) });
   }
   if (!info.closed) {
     items.push(
-      { label: "Neu laden", run: () => api.tabs.reload(tab.id) },
-      { label: muted ? "Ton an" : "Stummschalten", run: () => api.tabs.update(tab.id, { muted: !muted }) },
+      { label: "Reload", run: () => api.tabs.reload(tab.id) },
+      { label: muted ? "Unmute" : "Mute", run: () => api.tabs.update(tab.id, { muted: !muted }) },
     );
   }
   items.push(
-    { label: "Duplizieren als normaler Tab", run: () => api.tabs.create({ windowId, url: tab.url }) },
+    { label: "Duplicate as regular tab", run: () => api.tabs.create({ windowId, url: tab.url }) },
     "-",
-    { label: "Lösen (zurück in die Liste)", run: () => setPinned(tab.id, false) },
+    { label: "Unpin (back to the list)", run: () => setPinned(tab.id, false) },
   );
-  if (!info.closed) items.push({ label: "Kachel schließen", run: () => closeTile(tab.id) });
-  items.push({ label: "Kachel entfernen", danger: true, run: () => api.tabs.remove(tab.id) });
+  if (!info.closed) items.push({ label: "Close tile", run: () => closeTile(tab.id) });
+  items.push({ label: "Remove tile", danger: true, run: () => api.tabs.remove(tab.id) });
   openMenu(e, items);
 }
 
 function openGroupMenu(e, g, members) {
   openMenu(e, [
-    { label: "Umbenennen", run: () => startRename(g.id) },
+    { label: "Rename", run: () => startRename(g.id) },
     { swatches: (color) => api.tabGroups.update(g.id, { color }), current: g.color },
-    { label: "Neuer Tab in Gruppe", run: async () => {
+    { label: "New tab in group", run: async () => {
       const t = await api.tabs.create({ windowId });
       await api.tabs.group({ groupId: g.id, tabIds: [t.id] });
     } },
     "-",
-    { label: "Gruppe auflösen", run: () => api.tabs.ungroup(members.map((t) => t.id)) },
-    { label: `Gruppe schließen (${members.length} Tabs)`, danger: true, run: () => api.tabs.remove(members.map((t) => t.id)) },
+    { label: "Ungroup", run: () => api.tabs.ungroup(members.map((t) => t.id)) },
+    { label: `Close group (${members.length} tabs)`, danger: true, run: () => api.tabs.remove(members.map((t) => t.id)) },
   ]);
 }
 
-/* --------------------------------------------------------------- gruppen */
+/* ---------------------------------------------------------------- groups */
 
 async function newGroup(tabIds) {
   const groupId = await api.tabs.group({ tabIds, createProperties: { windowId } });
-  await api.tabGroups.update(groupId, { title: "Neue Gruppe" });
+  await api.tabGroups.update(groupId, { title: "New group" });
   renameGroupId = groupId;
   scheduleRefresh();
 }

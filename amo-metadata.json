@@ -1,0 +1,23 @@
+{
+  "categories": {
+    "firefox": ["tabs"]
+  },
+  "summary": {
+    "en-US": "Vertical tabs with pinned tiles, tab groups and drag & drop. Pin your favourite sites as tiles, close them without losing them, and jump back to their original page with a double-click.",
+    "de": "Vertikale Tabs mit angehefteten Kacheln, Tab-Gruppen und Drag & Drop. Lieblingsseiten als Kacheln anheften, schließen ohne sie zu verlieren und per Doppelklick zur Originalseite zurück."
+  },
+  "description": {
+    "en-US": "BetterVertTabs replaces the horizontal tab strip with a clean vertical sidebar.\n\n<b>Pinned tiles</b>\n- Drag a tab, link or bookmark into the tile area to pin it\n- Close a tile: it stays in place and its tab is unloaded to save memory\n- Click a closed tile to reopen it on the page you originally pinned\n- Double-click a tile to jump back to its original page\n\n<b>Tabs and groups</b>\n- Vertical tab list with favicons, loading and audio indicators\n- Native Firefox tab groups: collapse, rename, recolour, dissolve\n- Drag & drop between tiles, groups and the list\n- Context menus for pinning, duplicating, muting, unloading and closing\n\n<b>Privacy</b>\nBetterVertTabs collects no data and makes no network requests.\n\nOptional: a userChrome.css that hides the native tab strip is available in the source repository.",
+    "de": "BetterVertTabs ersetzt die horizontale Tab-Leiste durch eine aufgeräumte vertikale Sidebar.\n\n<b>Angeheftete Kacheln</b>\n- Tab, Link oder Lesezeichen in den Kachelbereich ziehen, um ihn anzuheften\n- Kachel schließen: Sie bleibt stehen, der Tab wird entladen und spart Speicher\n- Geschlossene Kachel anklicken: Sie öffnet sich wieder auf der ursprünglich angehefteten Seite\n- Doppelklick auf eine Kachel führt zurück zur Originalseite\n\n<b>Tabs und Gruppen</b>\n- Vertikale Tab-Liste mit Favicons, Lade- und Audio-Anzeige\n- Native Firefox-Tab-Gruppen: einklappen, umbenennen, einfärben, auflösen\n- Drag & Drop zwischen Kacheln, Gruppen und Liste\n- Kontextmenüs zum Anheften, Duplizieren, Stummschalten, Entladen und Schließen\n\n<b>Datenschutz</b>\nBetterVertTabs sammelt keine Daten und stellt keine Netzwerkanfragen.\n\nOptional: Eine userChrome.css, die die native Tab-Leiste ausblendet, liegt im Quellcode-Repository."
+  },
+  "homepage": {
+    "en-US": "https://github.com/NoiXdev/BetterVertTabs"
+  },
+  "support_url": {
+    "en-US": "https://github.com/NoiXdev/BetterVertTabs/issues"
+  },
+  "is_experimental": true,
+  "version": {
+    "license": "MIT"
+  }
+}

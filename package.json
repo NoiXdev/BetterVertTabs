@@ -1,0 +1,19 @@
+{
+  "name": "betterverttabs",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Vertical tabs with pinned tiles for Firefox",
+  "license": "MIT",
+  "scripts": {
+    "lint": "web-ext lint",
+    "build": "web-ext build",
+    "start": "web-ext run",
+    "sign": "node --env-file-if-exists=.env scripts/sign.mjs"
+  },
+  "devDependencies": {
+    "web-ext": "^8.0.0"
+  },
+  "engines": {
+    "node": ">=22.9"
+  }
+}

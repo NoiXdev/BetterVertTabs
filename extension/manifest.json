@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "BetterVertTabs",
-  "version": "0.2.0",
-  "description": "Vertikale Tabs mit angehefteten Kacheln – Arc/Zen-Stil für Firefox.",
+  "version": "0.1.0",
+  "description": "Vertical tabs with pinned tiles, tab groups and drag & drop – an Arc/Zen-style sidebar for Firefox.",
   "browser_specific_settings": {
     "gecko": {
       "id": "betterverttabs@noixdev",
@@ -17,7 +17,6 @@
   "permissions": [
     "tabs",
     "tabGroups",
-    "storage",
     "sessions"
   ],
   "sidebar_action": {
@@ -27,15 +26,17 @@
     "open_at_install": true
   },
   "icons": {
-    "48": "icons/icon.svg",
-    "96": "icons/icon.svg"
+    "48": "icons/icon-48.png",
+    "96": "icons/icon-96.png",
+    "128": "icons/icon-128.png"
   },
   "commands": {
     "_execute_sidebar_action": {
       "suggested_key": {
         "default": "Alt+S"
       },
-      "description": "Sidebar ein-/ausblenden"
+      "description": "Toggle the sidebar"
     }
-  }
+  },
+  "homepage_url": "https://github.com/NoiXdev/BetterVertTabs"
 }

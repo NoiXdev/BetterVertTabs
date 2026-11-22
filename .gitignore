@@ -3,3 +3,5 @@
 web-ext-artifacts/
 *.xpi
 .amo-upload-uuid
+node_modules/
+.env

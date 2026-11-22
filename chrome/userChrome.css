@@ -1,29 +1,29 @@
 /*
  * BetterVertTabs – userChrome.css
- * Blendet die horizontale Tab-Leiste und den Sidebar-Kopf aus,
- * damit die Extension-Sidebar wie bei Arc/Zen wirkt.
+ * Hides the horizontal tab strip and the sidebar header so the extension
+ * sidebar feels like Arc/Zen.
  *
- * Voraussetzung: about:config -> toolkit.legacyUserProfileCustomizations.stylesheets = true
- * Datei liegt in: <Profilordner>/chrome/userChrome.css
+ * Requires: about:config -> toolkit.legacyUserProfileCustomizations.stylesheets = true
+ * Location: <profile folder>/chrome/userChrome.css
  */
 
-/* 1) Horizontale Tabs ausblenden (auch die native vertikale Leiste) */
+/* 1) Hide the horizontal tabs (and Firefox's native vertical tab bar) */
 #TabsToolbar { visibility: collapse !important; }
 #sidebar-main { display: none !important; }
 
-/* 2) macOS: Platz für die Ampel-Buttons links in der Adressleiste lassen */
+/* 2) macOS: leave room for the traffic-light buttons left of the toolbar */
 :root:is([customtitlebar], [tabsintitlebar]):not([inFullscreen]) #nav-bar {
   padding-left: 76px !important;
 }
 #nav-bar { -moz-window-dragging: drag; }
 #nav-bar :is(toolbarbutton, #urlbar-container, toolbaritem) { -moz-window-dragging: no-drag; }
 
-/* 3) Kopfzeile der BetterVertTabs-Sidebar ausblenden (betrifft nur diese Extension) */
+/* 3) Hide the BetterVertTabs sidebar header (affects only this extension) */
 #sidebar-box[sidebarcommand="betterverttabs_noixdev-sidebar-action"] #sidebar-header {
   display: none !important;
 }
 
-/* 4) Sidebar optisch einbetten */
+/* 4) Blend the sidebar into the window */
 #sidebar-box[sidebarcommand="betterverttabs_noixdev-sidebar-action"] {
   min-width: 200px !important;
   border: none !important;

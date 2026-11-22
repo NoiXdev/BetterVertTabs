@@ -58,7 +58,7 @@ body { display: flex; flex-direction: column; }
 
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: default; }
 
-/* ----------------------------------------------------------- kacheln */
+/* ------------------------------------------------------------------- tiles */
 
 .pinned-grid {
   display: grid;
@@ -70,7 +70,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 }
 .pinned-grid.empty { min-height: 0; margin-bottom: 4px; }
 
-/* Ablagefläche fürs Anheften – nur sichtbar während eines Drags */
+/* Drop slot for pinning – only visible while dragging */
 .tile-drop {
   display: none;
   height: 44px;
@@ -101,12 +101,12 @@ body.drag-active .tile-drop { display: grid; }
 }
 .tile.discarded .tile-icon { opacity: 0.45; }
 
-/* Geschlossene Kachel: bleibt stehen, wirkt aber „aus“ */
+/* Closed tile: stays in place but looks "off" */
 .tile.closed { background: transparent; box-shadow: inset 0 0 0 1px var(--divider); }
 .tile.closed:hover { background: var(--row-hover); }
 .tile.closed .tile-icon { opacity: 0.4; filter: grayscale(1); }
 
-/* Seite weicht von der Originalseite ab */
+/* Page differs from the original page */
 .tile.navigated::after {
   content: "";
   position: absolute;
@@ -141,7 +141,7 @@ body.drag-active .tile-drop { display: grid; }
 
 .tile .audio { position: absolute; top: 3px; right: 3px; width: 14px; height: 14px; }
 
-/* ------------------------------------------------------------ zeilen */
+/* -------------------------------------------------------------------- rows */
 
 .row {
   position: relative;
@@ -218,7 +218,7 @@ body.drag-active .tile-drop { display: grid; }
 
 .divider { height: 1px; background: var(--divider); margin: 10px 6px; }
 
-/* ----------------------------------------------------------- gruppen */
+/* ------------------------------------------------------------------ groups */
 
 .group { margin-bottom: 4px; }
 
@@ -261,7 +261,7 @@ body.drag-active .tile-drop { display: grid; }
   background: color-mix(in srgb, var(--group-color) 55%, transparent);
 }
 
-/* ------------------------------------------------------- drag & drop */
+/* ------------------------------------------------------------- drag & drop */
 
 .dragging { opacity: 0.35; }
 .drop-before::before, .drop-after::after {
@@ -283,7 +283,7 @@ body.drag-active .tile-drop { display: grid; }
 .tab-list.drop-into, .new-tab.drop-into { box-shadow: inset 0 0 0 1.5px var(--drop); border-radius: 8px; }
 .tab-list { min-height: 40px; border-radius: 8px; }
 
-/* -------------------------------------------------------- bottom bar */
+/* -------------------------------------------------------------- bottom bar */
 
 #bottom-bar {
   display: flex;
@@ -303,7 +303,7 @@ body.drag-active .tile-drop { display: grid; }
 .icon-btn svg { width: 16px; height: 16px; }
 .icon-btn:hover { background: var(--row-hover); color: var(--fg); }
 
-/* ------------------------------------------------------- kontextmenü */
+/* ------------------------------------------------------------ context menu */
 
 .context-menu {
   position: fixed;

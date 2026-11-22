@@ -1,8 +1,7 @@
 "use strict";
 /*
- * Nur für die Vorschau außerhalb von Firefox (sidebar.html direkt im Browser
- * geöffnet). In der echten Extension existiert `browser` und dieses Skript
- * tut nichts.
+ * Fake browser API for the design preview (dev/preview.html) outside Firefox.
+ * Not shipped with the extension.
  */
 if (typeof globalThis.browser === "undefined" || !globalThis.browser.tabs) {
   const listeners = {};
@@ -19,28 +18,28 @@ if (typeof globalThis.browser === "undefined" || !globalThis.browser.tabs) {
   });
 
   let tabs = [
-    mk("https://claude.ai", "Claude", { pinned: true }),
-    mk("https://example.org", "Projekt", { pinned: true, favIconUrl: "" }),
     mk("https://github.com", "GitHub", { pinned: true }),
-    mk("https://pkg.go.dev", "Docs", { pinned: true }),
+    mk("https://example.org", "Example", { pinned: true, favIconUrl: "" }),
+    mk("https://developer.mozilla.org", "MDN Web Docs", { pinned: true }),
+    mk("https://wikipedia.org", "Wikipedia", { pinned: true }),
     mk("https://youtube.com/watch?v=demo", "YouTube", { pinned: true, active: true }),
     mk("https://mail.proton.me", "Mail", { pinned: true }),
-    mk("https://hubspot.com", "HubSpot", { pinned: true }),
+    mk("https://figma.com", "Figma", { pinned: true }),
     mk("https://x.com", "X", { pinned: true }),
-    mk("https://app.hubspot.com", "Vorgänge · Zugang zum Testing", { groupId: 1 }),
-    mk("https://marketix.example", "Marketix - 3b", { groupId: 1, favIconUrl: "" }),
-    mk("https://omr.com", "OMR Education – Knowledge is yours", { groupId: 1 }),
-    mk("https://mcdonalds.de", "McDonald's Deutschland"),
-    mk("https://nidolo.com", "Games | Nidolo", { audible: true }),
-    mk("https://google.com", "Suche - Google", { status: "loading" }),
+    mk("https://github.com/NoiXdev/BetterVertTabs/issues", "Issues · NoiXdev/BetterVertTabs", { groupId: 1 }),
+    mk("https://tracker.example", "Sprint board", { groupId: 1, favIconUrl: "" }),
+    mk("https://developer.mozilla.org/docs/Mozilla/Add-ons", "Browser extensions – MDN", { groupId: 1 }),
+    mk("https://news.ycombinator.com", "Hacker News"),
+    mk("https://open.spotify.com", "Spotify – Web Player", { audible: true }),
+    mk("https://duckduckgo.com", "firefox vertical tabs at DuckDuckGo", { status: "loading" }),
     mk("about:neterror", "Problem loading page", { favIconUrl: "" }),
-    mk("https://zen-browser.app", "Release notes - Zen", { discarded: true }),
-    mk("https://translate.google.com", "Google Übersetzer"),
+    mk("https://www.mozilla.org/firefox/releases/", "Firefox Release Notes", { discarded: true }),
+    mk("https://translate.google.com", "Google Translate"),
   ];
   let groups = [{ id: 1, windowId: 1, title: "Work", color: "red", collapsed: false }];
   const reindex = () => tabs.forEach((t, i) => (t.index = i));
   reindex();
-  // Demo: YouTube wurde mit der Startseite angeheftet, Mail ist geschlossen
+  // Demo: YouTube was pinned on its start page, Mail is closed
   queueMicrotask(() => {
     const yt = tabs.find((t) => t.title === "YouTube");
     tabValues.set(yt.id + "tileUrl", "https://youtube.com");

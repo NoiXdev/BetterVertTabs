@@ -1,69 +1,112 @@
 # BetterVertTabs
 
-Eine eigene Firefox-Extension für vertikale Tabs im Stil von Arc, Dia und Zen:
-angeheftete Tabs als Kacheln, darunter Gruppen und eine normale Tab-Liste.
+A Firefox extension for vertical tabs in the style of Arc, Dia and Zen:
+pinned tabs as tiles at the top, tab groups and a regular tab list below.
 
 ```
-extension/            die Extension selbst
+extension/            the extension itself (only this folder is packaged)
   manifest.json
-  sidebar/            Sidebar-Oberfläche (HTML/CSS/JS)
-chrome/userChrome.css blendet die alte Tab-Leiste und den Sidebar-Kopf aus
+  sidebar/            sidebar UI (HTML/CSS/JS)
+chrome/userChrome.css hides the native tab strip and the sidebar header
+dev/                  design preview without Firefox
+scripts/sign.mjs      signs/publishes the extension on addons.mozilla.org
+amo-metadata.json     listing texts and settings for addons.mozilla.org
+web-ext-config.mjs    settings for lint, build and sign
 ```
 
-## 1. Extension testen (temporär)
+Run `npm install` once (Node.js 22.9 or newer). Then these commands are available:
 
-1. In Firefox `about:debugging#/runtime/this-firefox` öffnen.
-2. Auf **Temporäres Add-on laden…** klicken und `extension/manifest.json` auswählen.
-3. Die Sidebar öffnet sich automatisch. Falls nicht: **Alt+S** drücken oder über das Sidebar-Menü „BetterVertTabs“ wählen.
+| Command | What it does |
+|---|---|
+| `npm run lint` | Checks the extension like the AMO validator does |
+| `npm run build` | Packages `extension/` as a `.zip` into `web-ext-artifacts/` |
+| `npm start` | Starts a fresh Firefox with the extension loaded |
+| `npm run sign` | Uploads the extension to addons.mozilla.org for signing |
 
-Temporäre Add-ons verschwinden nach einem Neustart von Firefox. Wie du sie dauerhaft installierst, steht unten in Abschnitt 3.
+## 1. Try the extension (temporary)
 
-## 2. Firefox-Oberfläche anpassen (userChrome.css)
+1. Open `about:debugging#/runtime/this-firefox` in Firefox.
+2. Click **Load Temporary Add-on…** and select `extension/manifest.json`.
+3. The sidebar opens automatically. If not, press **Alt+S** or pick "BetterVertTabs" from the sidebar menu.
 
-1. `about:config` öffnen und `toolkit.legacyUserProfileCustomizations.stylesheets` auf **true** setzen.
-2. `about:support` öffnen, beim Eintrag **Profilordner** auf **Im Finder anzeigen** klicken.
-3. Im Profilordner einen Ordner `chrome` anlegen und `chrome/userChrome.css` aus diesem Projekt hineinkopieren.
-4. Firefox neu starten.
+Temporary add-ons are removed when Firefox restarts. See section 3 for a permanent install.
 
-Eine bestehende `userChrome.css` überschreibst du nicht, sondern hängst den Inhalt unten an.
+## 2. Customize the Firefox UI (userChrome.css)
 
-## 3. Dauerhaft installieren
+1. Open `about:config` and set `toolkit.legacyUserProfileCustomizations.stylesheets` to **true**.
+2. Open `about:support` and click **Show in Finder** next to **Profile Folder**.
+3. Create a `chrome` folder in the profile folder and copy `chrome/userChrome.css` from this repository into it.
+4. Restart Firefox.
 
-Normale Firefox-Versionen verlangen signierte Extensions. Die Signatur ist kostenlos, und die Extension bleibt dabei privat (unlisted):
+If you already have a `userChrome.css`, don't overwrite it. Append the contents instead.
 
-1. Auf https://addons.mozilla.org/developers/ unter **Verwalten → API-Schlüssel** einen Schlüssel erzeugen.
-2. Ausführen:
+## 3. Publish on addons.mozilla.org
+
+One-time setup:
+
+1. A Mozilla account with two-factor authentication enabled.
+2. Accept the developer agreement in the [Developer Hub](https://addons.mozilla.org/developers/).
+3. Create an API key under **Tools → Manage API Keys**.
+4. Store the key as `MOZILLA_WEB_EXT_API_KEY` and the secret as `MOZILLA_WEB_EXT_API_SECRET`:
+   - for releases via GitHub Actions: as organization or repository secrets
+   - for local publishing: exported in your shell, or in a `.env` file (copy `.env.example`; `.env` is ignored by Git)
+
+### Release via GitHub Actions (recommended)
+
+1. Bump `version` in `extension/manifest.json` and `package.json`, commit and push.
+2. Tag the commit with the same version and push the tag:
 
 ```bash
-cd extension
-npx web-ext sign --channel=unlisted --api-key=DEIN_KEY --api-secret=DEIN_SECRET
+git tag v0.1.0
 ```
 
-3. Die erzeugte `.xpi`-Datei per Drag & Drop in Firefox ziehen.
+```bash
+git push origin v0.1.0
+```
 
-## Bedienung
+The [release workflow](.github/workflows/release.yml) checks that the tag matches the manifest version, lints, builds, publishes the version on addons.mozilla.org and creates a GitHub release with the package attached.
 
-| Aktion | Wie |
+### Release from your machine
+
+```bash
+npm run sign
+```
+
+On the first upload, description, category, license etc. are taken from `amo-metadata.json`. Mozilla then reviews the extension. Once approved, Firefox Sync installs it on all your devices automatically.
+
+Just for yourself, without a public listing: `npm run sign -- --channel=unlisted` creates a signed `.xpi` in `web-ext-artifacts/` that you can install by dragging it into Firefox.
+
+## Usage
+
+| Action | How |
 |---|---|
-| Tab aktivieren | Klick |
-| Tab schließen | Mittelklick oder das ✕ beim Überfahren |
-| Als Kachel anheften | Tab in den Kachelbereich ziehen (beim Ziehen erscheint ein Ablageplatz) oder Rechtsklick → *Als Kachel anheften* |
-| Kachel aus Link/Lesezeichen | Link, Lesezeichen oder Adresse aus der URL-Leiste in den Kachelbereich ziehen |
-| Kachel schließen | ✕ oben links auf der Kachel oder Mittelklick. Die Kachel bleibt stehen, der Tab wird entladen |
-| Geschlossene Kachel öffnen | Klick. Sie startet wieder auf ihrer **Originalseite** |
-| Zurück zur Originalseite | **Doppelklick** auf die Kachel. Ein kleiner Punkt zeigt an, dass du woanders bist |
-| Originalseite ändern | Rechtsklick → *Aktuelle Seite als Originalseite merken* |
-| Kachel ganz entfernen | Rechtsklick → *Kachel entfernen* oder *Lösen* (zurück in die Liste) |
-| Sortieren | Drag & Drop (auch zwischen Kacheln, Gruppen und Liste) |
-| Neue Gruppe | Ordner-Symbol unten links oder Rechtsklick → *Neue Gruppe mit diesem Tab* |
-| Gruppe umbenennen | Doppelklick auf den Gruppennamen oder Rechtsklick → *Umbenennen* |
-| Gruppe ein-/ausklappen | Klick auf den Gruppenkopf |
-| Farbe, Auflösen, Schließen | Rechtsklick auf den Gruppenkopf |
+| Activate a tab | Click |
+| Close a tab | Middle-click or the ✕ on hover |
+| Pin as tile | Drag a tab into the tile area (a drop slot appears while dragging) or right-click → *Pin as tile* |
+| Tile from a link/bookmark | Drag a link, bookmark or the address from the URL bar into the tile area |
+| Close a tile | ✕ in the top-left corner of the tile or middle-click. The tile stays, its tab is unloaded |
+| Open a closed tile | Click. It starts on its **original page** again |
+| Back to the original page | **Double-click** the tile. A small dot shows that you have navigated away |
+| Change the original page | Right-click → *Use current page as original page* |
+| Remove a tile completely | Right-click → *Remove tile* or *Unpin* (back to the list) |
+| Reorder | Drag & drop (also between tiles, groups and the list) |
+| New group | Folder icon in the bottom left or right-click → *New group with this tab* |
+| Rename a group | Double-click the group name or right-click → *Rename* |
+| Collapse/expand a group | Click the group header |
+| Color, ungroup, close | Right-click the group header |
 
-Die Originalseite einer Kachel wird direkt am Tab gespeichert und übersteht auch einen Neustart von Firefox.
+A tile's original page is stored on the tab itself and survives Firefox restarts.
 
-Gruppen sind echte Firefox-Tab-Gruppen. Sie bleiben also auch ohne die Extension erhalten.
+Groups are native Firefox tab groups, so they persist even without the extension.
 
-## Design-Vorschau ohne Firefox
+## Design preview without Firefox
 
-`extension/sidebar/sidebar.html` lässt sich direkt im Browser öffnen. `dev-mock.js` liefert dann Beispiel-Tabs.
+```bash
+python3 -m http.server 8765
+```
+
+Then open http://localhost:8765/dev/preview.html. The page loads the real sidebar and replaces the Firefox API with sample tabs from `dev/dev-mock.js`. The `dev/` folder is not shipped with the extension.
+
+## License
+
+MIT, see [LICENSE](LICENSE).
