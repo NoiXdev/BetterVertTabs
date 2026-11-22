@@ -53,20 +53,16 @@ One-time setup:
 
 ### Release via GitHub Actions (recommended)
 
-1. Bump `version` in `extension/manifest.json` and `package.json`, commit and push.
-2. Tag the commit with the same version and push the tag:
+1. Open **Actions → Release → Run workflow** on `main`.
+2. Pick the bump (`patch`, `minor` or `major`). Tick **dry_run** to rehearse without submitting or pushing anything.
 
-```bash
-git tag v0.1.0
-```
+The [release workflow](.github/workflows/release.yaml) first runs [CI](.github/workflows/ci.yaml) as a gate, then hands over to the shared NoiX workflow [`create_firefox_addon_changelog_version_release`](https://github.com/NoiXdev/github-workflows/blob/main/.github/workflows/create_firefox_addon_changelog_version_release.yaml). It computes the next version, writes it into `extension/manifest.json`, generates `CHANGELOG.md`, lints and builds, submits the version to addons.mozilla.org, commits and tags the release and creates a GitHub release with the package attached.
 
-```bash
-git push origin v0.1.0
-```
-
-The [release workflow](.github/workflows/release.yml) checks that the tag matches the manifest version, lints, builds, publishes the version on addons.mozilla.org and creates a GitHub release with the package attached.
+Don't bump the version by hand: the workflow owns it. `manifest.json` starts at `0.0.0`, so the first `minor` release is `v0.1.0`.
 
 ### Release from your machine
+
+Bump `version` in `extension/manifest.json` yourself, then:
 
 ```bash
 npm run sign

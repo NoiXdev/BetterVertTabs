@@ -1,6 +1,5 @@
 {
   "name": "betterverttabs",
-  "version": "0.1.0",
   "private": true,
   "description": "Vertical tabs with pinned tiles for Firefox",
   "license": "MIT",

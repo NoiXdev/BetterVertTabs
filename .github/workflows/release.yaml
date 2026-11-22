@@ -1,0 +1,47 @@
+name: Release
+run-name: Release ${{ inputs.bump }}${{ inputs.dry_run && ' (dry run)' || '' }}
+
+# Started by hand from the Actions tab. The shared NoiX workflow computes the
+# next version, writes it into extension/manifest.json, lints, builds, submits
+# the add-on to addons.mozilla.org, commits, tags and creates the GitHub
+# release. Needs the secrets MOZILLA_WEB_EXT_API_KEY and
+# MOZILLA_WEB_EXT_API_SECRET.
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Version bump type"
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      dry_run:
+        description: "Lint and build, submit and push nothing"
+        type: boolean
+        default: false
+
+concurrency: release
+
+permissions:
+  contents: write
+
+jobs:
+  gates:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    uses: ./.github/workflows/ci.yaml
+
+  release:
+    needs: [gates]
+    uses: NoiXdev/github-workflows/.github/workflows/create_firefox_addon_changelog_version_release.yaml@main
+    with:
+      bump: ${{ inputs.bump }}
+      dry_run: ${{ inputs.dry_run }}
+      source_dir: extension
+      version_file: extension/manifest.json
+      channel: listed
+      amo_metadata: amo-metadata.json
+      product_name: BetterVertTabs
+      ref: ${{ github.sha }}
+    secrets: inherit
