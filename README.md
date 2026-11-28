@@ -90,6 +90,7 @@ Just for yourself, without a public listing: `npm run sign -- --channel=unlisted
 | Rename a group | Double-click the group name or right-click → *Rename* |
 | Collapse/expand a group | Click the group header |
 | Color, ungroup, close | Right-click the group header |
+| Split view | Shown as one paired row. Create it with Firefox's own split view (extensions can't create one yet) |
 
 A tile's original page is stored on the tab itself and survives Firefox restarts.
 

@@ -92,6 +92,10 @@ function svg(markup) {
 
 const tabById = (id) => tabs.find((t) => t.id === id);
 const inGroup = (t) => t.groupId !== undefined && t.groupId !== -1;
+// Firefox's native split view (read-only for extensions, Firefox 160+)
+const NO_SPLIT = api.tabs.SPLIT_VIEW_ID_NONE ?? -1;
+const inSplit = (t) => t.splitViewId !== undefined && t.splitViewId !== NO_SPLIT;
+const splitMates = (t) => (inSplit(t) ? tabs.filter((x) => x.splitViewId === t.splitViewId) : [t]);
 
 /* --------------------------------------------------------------- render */
 
@@ -117,7 +121,7 @@ function render() {
   $groups.replaceChildren(...order.map((gid) => renderGroup(gid, members.get(gid))));
 
   // Ungrouped tabs
-  $tabs.replaceChildren(...loose.filter((t) => !inGroup(t)).map(renderRow));
+  $tabs.replaceChildren(...renderRows(loose.filter((t) => !inGroup(t))));
 
   if (renameGroupId !== null) startRename(renameGroupId);
 }
@@ -157,6 +161,25 @@ function renderTile(tab) {
 function sameUrl(a, b) {
   const strip = (u) => (u || "").replace(/#.*$/, "").replace(/\/$/, "");
   return strip(a) === strip(b);
+}
+
+// Tabs of a split view sit next to each other -> render them as one paired row
+function renderRows(list) {
+  const out = [];
+  for (let i = 0; i < list.length; i++) {
+    const members = [list[i]];
+    if (inSplit(list[i])) while (list[i + 1]?.splitViewId === list[i].splitViewId) members.push(list[++i]);
+    out.push(members.length > 1 ? renderSplit(members) : renderRow(members[0]));
+  }
+  return out;
+}
+
+function renderSplit(members) {
+  const el = document.createElement("div");
+  el.className = "split";
+  el.classList.toggle("active", members.some((t) => t.active));
+  el.append(...members.map(renderRow));
+  return el;
 }
 
 function renderRow(tab) {
@@ -222,9 +245,9 @@ function renderGroup(gid, members) {
 
   const list = document.createElement("div");
   list.className = "group-tabs";
-  // Collapsed: only show the active tab (like Arc/Zen)
-  const visible = g.collapsed ? members.filter((t) => t.active) : members;
-  list.append(...visible.map(renderRow));
+  // Collapsed: only show the active tab (like Arc/Zen), with its split partner
+  const visible = g.collapsed ? members.filter((t) => splitMates(t).some((m) => m.active)) : members;
+  list.append(...renderRows(visible));
 
   wrap.append(head, list);
   return wrap;
@@ -480,6 +503,11 @@ async function dropTab(id, target, pos) {
   if (target.tabId === id) return;
   let ref = tabById(target.tabId);
   if (!ref) return;
+  // Never drop a tab between the two halves of a split view
+  if (inSplit(ref) && ref.splitViewId !== dragged.splitViewId) {
+    const pair = splitMates(ref);
+    ref = pos === "after" ? pair.at(-1) : pair[0];
+  }
 
   if (ref.pinned !== dragged.pinned) await setPinned(id, ref.pinned);
   if (hasGroups && !ref.pinned) {

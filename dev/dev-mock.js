@@ -14,7 +14,7 @@ if (typeof globalThis.browser === "undefined" || !globalThis.browser.tabs) {
   let nextId = 100;
   const mk = (url, title, extra = {}) => ({
     id: nextId++, windowId: 1, url, title, favIconUrl: fav(new URL(url).hostname),
-    pinned: false, active: false, hidden: false, groupId: -1, status: "complete", ...extra,
+    pinned: false, active: false, hidden: false, groupId: -1, splitViewId: -1, status: "complete", ...extra,
   });
 
   let tabs = [
@@ -29,7 +29,8 @@ if (typeof globalThis.browser === "undefined" || !globalThis.browser.tabs) {
     mk("https://github.com/NoiXdev/BetterVertTabs/issues", "Issues · NoiXdev/BetterVertTabs", { groupId: 1 }),
     mk("https://tracker.example", "Sprint board", { groupId: 1, favIconUrl: "" }),
     mk("https://developer.mozilla.org/docs/Mozilla/Add-ons", "Browser extensions – MDN", { groupId: 1 }),
-    mk("https://news.ycombinator.com", "Hacker News"),
+    mk("https://news.ycombinator.com", "Hacker News", { splitViewId: 7 }),
+    mk("https://lobste.rs", "Lobsters", { splitViewId: 7 }),
     mk("https://open.spotify.com", "Spotify – Web Player", { audible: true }),
     mk("https://duckduckgo.com", "firefox vertical tabs at DuckDuckGo", { status: "loading" }),
     mk("about:neterror", "Problem loading page", { favIconUrl: "" }),
@@ -60,6 +61,7 @@ if (typeof globalThis.browser === "undefined" || !globalThis.browser.tabs) {
     },
     windows: { getCurrent: async () => ({ id: 1 }) },
     tabs: {
+      SPLIT_VIEW_ID_NONE: -1,
       query: async () => tabs.map((t) => ({ ...t })),
       get: async (id) => ({ ...get(id) }),
       update: async (id, p) => {
